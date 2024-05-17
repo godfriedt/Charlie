@@ -8,7 +8,9 @@ pub fn socket_listen(addr: &String, port: &String) {
     let listner = TcpListener::bind(format!("{addr}:{port}")).unwrap();
     
     for stream in listner.incoming() {
+
         let mut stream = stream.unwrap();
+
         loop {
             // write
             let mut write_buf = String::new();
@@ -16,10 +18,15 @@ pub fn socket_listen(addr: &String, port: &String) {
             stream.write(write_buf.as_bytes()).unwrap();
 
             // read
-            let mut read_buf= [0u8; 1024];
-            let bytes_read = stream.read(&mut read_buf).unwrap();
+            let mut read_buf = [0u8; 1024];
+            let mut bytes_read = stream.read(&mut read_buf).unwrap();
+            while bytes_read >= read_buf.len() {
+                let data = &read_buf[..bytes_read];
+                print!("{}", str::from_utf8(&data).unwrap());
+                bytes_read = stream.read(&mut read_buf).unwrap();
+            }
             let data = &read_buf[..bytes_read];
-            println!("{}", str::from_utf8(&data).unwrap());
+            print!("{}", str::from_utf8(&data).unwrap());
         }
     }
 }
