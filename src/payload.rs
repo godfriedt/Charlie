@@ -1,7 +1,9 @@
-use std::net::TcpStream;
-use std::io::Read;
+use std::{
+    net::TcpStream,
+    io::{Read, Write},
+};
 
-use crate::library::handle_command_and_write;
+use crate::library::handle_command_len;
 
 pub fn socket_connect(addr: &String, port: &String) {
 
@@ -15,7 +17,9 @@ pub fn socket_connect(addr: &String, port: &String) {
         let data = &read_buf[..bytes_read];
 
         // execute command and write to tcp stream
-        handle_command_and_write(data, &mut connection);
+        let output_to_write = handle_command_len(data);
+        connection.write(output_to_write.as_bytes()).unwrap();
+        connection.flush().unwrap();
         
     }
 }
