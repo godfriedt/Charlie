@@ -2,8 +2,8 @@
 
 use std::env;
 
-mod listener;
-mod connect;
+mod server;
+mod payload;
 mod library;
 
 fn main() {
@@ -13,8 +13,8 @@ fn main() {
 
     // driver code
     let socket_function = match args[1].as_str() {
-        "listen" => listener::socket_listen,
-        "connect" => connect::socket_connect,
+        "listen" => server::socket_listen,
+        "connect" => payload::socket_connect,
         _ => panic!("Please choose either listen or connect to start the listener or connector respectively.")
     };
 
