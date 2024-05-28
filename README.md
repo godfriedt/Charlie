@@ -10,3 +10,4 @@
     5. spawn a shell session that we exist inside of instead of running commands over and over again from the same context
 
 run with `cargo +nightly run`
+must install linux nightly toolchain to run on linux
